@@ -9,7 +9,6 @@
 
 int main()
 {
-
 	std::chrono::time_point<std::chrono::system_clock>start, end;
 	DWORD processID{ 0 };
 	do
@@ -170,7 +169,7 @@ int main()
 	else
 	{
 		std::cerr << "Error, invalid handle value when attempting to OpenProcess\n";
-		std::getchar();
+		static_cast<void>(std::getchar());
 		return EXIT_FAILURE;
 	}
 
