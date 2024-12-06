@@ -65,6 +65,8 @@ int main()
 	HANDLE process = OpenTargetProcess(processID);
 	if (process != NULL)
 	{
+		// Get the addresses for each cheat
+
 		uintptr_t localPlayerAddr		= moduleBaseAddress + game_offsets::relative;
 		uintptr_t healthAddr			= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health);
 		uintptr_t armorAddr				= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::armor);
@@ -73,6 +75,19 @@ int main()
 		uintptr_t primaryStateAddr		= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryState);
 		uintptr_t grenadesAddr			= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades);
 		uintptr_t recoilNopAddr			= moduleBaseAddress + 0x63786;
+
+
+		// Declare and initalize variables for things such as health
+
+		int currentHealth{ 0 };
+		int currentArmor{ 0 };
+		int currentPrimaryMag{ 0 };
+		int currentPrimaryAmmo{ 0 };
+		int currentPrimaryState{ 0 };
+		int currentGrenades{ 0 };
+
+
+		// Booleans control whether the cheat is toggled or not
 
 		bool health = false;
 		bool armor = false;
@@ -112,27 +127,26 @@ int main()
 					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(recoilNopAddr), (BYTE*)"\x50\x8d\x4c\x24\x1c\x51\x8b\xce\xff\xd2", 10);
 				}
 			}
-			
-			int health			{ 0 };
-			int armor			{ 0 };
-			int primaryMag		{ 0 };
-			int primaryAmmo		{ 0 };
-			int primaryState	{ 0 };
-			int grenades		{ 0 };
 
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(healthAddr), &health, sizeof(health), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(armorAddr), &armor, sizeof(armor), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryMagAddr), &primaryMag, sizeof(primaryMag), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryAmmoAddr), &primaryAmmo, sizeof(primaryAmmo), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryStateAddr), &primaryState, sizeof(primaryState), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(grenadesAddr), &grenades, sizeof(grenades), nullptr);
 
-			ValueData noticeHealth("Health", healthAddr, &health, TextColors::BRIGHT_GREEN);
-			ValueData noticeArmor("Armor", armorAddr, &armor, TextColors::GREEN);
-			ValueData noticePrimaryMag("Primary Mag", primaryMagAddr, &primaryMag, TextColors::BRIGHT_RED);
-			ValueData noticePrimaryAmmo("Primary Ammo", primaryAmmoAddr, &primaryAmmo, TextColors::BRIGHT_RED);
-			ValueData noticeprimaryStateAddr("Primary State", primaryStateAddr, &primaryState, TextColors::GRAY);
-			ValueData noticeGrenades("Grenades", grenadesAddr, &grenades, TextColors::BRIGHT_RED);
+			// Update the variables for health and other
+
+			ReadProcessMemory(process, reinterpret_cast<BYTE*>(healthAddr), &currentHealth, sizeof(int), nullptr);
+			ReadProcessMemory(process, reinterpret_cast<BYTE*>(armorAddr), &currentArmor, sizeof(int), nullptr);
+			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryMagAddr), &currentPrimaryMag, sizeof(int), nullptr);
+			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryAmmoAddr), &currentPrimaryAmmo, sizeof(int), nullptr);
+			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryStateAddr), &currentPrimaryState, sizeof(int), nullptr);
+			ReadProcessMemory(process, reinterpret_cast<BYTE*>(grenadesAddr), &currentGrenades, sizeof(int), nullptr);
+
+
+			// Update the console with new variable values
+
+			ValueData noticeHealth("Health", healthAddr, &currentHealth, TextColors::BRIGHT_GREEN);
+			ValueData noticeArmor("Armor", armorAddr, &currentArmor, TextColors::GREEN);
+			ValueData noticePrimaryMag("Primary Mag", primaryMagAddr, &currentPrimaryMag, TextColors::BRIGHT_RED);
+			ValueData noticePrimaryAmmo("Primary Ammo", primaryAmmoAddr, &currentPrimaryAmmo, TextColors::BRIGHT_RED);
+			ValueData noticeprimaryStateAddr("Primary State", primaryStateAddr, &currentPrimaryState, TextColors::GRAY);
+			ValueData noticeGrenades("Grenades", grenadesAddr, &currentGrenades, TextColors::BRIGHT_RED);
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
 			system("cls");
