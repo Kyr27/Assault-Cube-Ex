@@ -6,41 +6,6 @@
 #include "console.h"
 #include <string>
 
-DWORD WaitForProcess(const wchar_t* processName)
-{
-	DWORD processID{ 0 };
-	do
-	{
-		Notice noticeWaitingForGame("Waiting for process", TextColors::BRIGHT_RED);
-		processID = process_manip::GetProcessID(processName);
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		system("cls");
-	} while (processID == 0);
-
-	return processID;
-}
-
-uintptr_t WaitForModule(DWORD processID, const wchar_t* moduleName)
-{
-	uintptr_t moduleBaseAddress{ 0 };
-	do
-	{
-		Notice noticeWaitingForModule("Waiting for the module to finish loading", TextColors::GREEN);
-		moduleBaseAddress = process_manip::GetProcessModuleBaseAddress(processID, moduleName);
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		system("cls");
-	} while (moduleBaseAddress == 0);
-
-	return moduleBaseAddress;
-}
-
-HANDLE OpenTargetProcess(DWORD processID) {
-	HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, NULL, processID);
-	if (!process) {
-		throw std::runtime_error("Failed to open process. Error code: " + std::to_string(GetLastError()));
-	}
-	return process;
-}
 
 void ToggleCheat(HANDLE process, uintptr_t addr, int& newValue, int& oldValue, bool& toggleState) {
 	toggleState = !toggleState;
@@ -100,8 +65,8 @@ int main()
 	try {
 		// Wait for process and module to load
 
-		DWORD processID = WaitForProcess(L"ac_client.exe");
-		uintptr_t moduleBase = WaitForModule(processID, L"ac_client.exe");
+		DWORD processID = process_manip::WaitForProcess(L"ac_client.exe");
+		uintptr_t moduleBase = process_manip::WaitForModule(processID, L"ac_client.exe");
 
 		std::cout << "Process ID: " << std::hex << processID << '\n';
 		std::cout << "Module base address: " << moduleBase << '\n';
@@ -109,7 +74,7 @@ int main()
 
 		// Open a handle to the game so we can modify it
 
-		HANDLE process = OpenTargetProcess(processID);
+		HANDLE process = process_manip::OpenTargetProcess(processID);
 
 
 		// Get the addresses for each cheat

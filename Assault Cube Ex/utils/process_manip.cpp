@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <vector>
+#include <console.h>
+#include <string>
 
 namespace process_manip
 {
@@ -66,5 +68,42 @@ namespace process_manip
 			pointer += offset;
 		}
 		return pointer;
+	}
+
+
+	DWORD WaitForProcess(const wchar_t* processName)
+	{
+		DWORD processID{ 0 };
+		do
+		{
+			Notice noticeWaitingForGame("Waiting for process", TextColors::BRIGHT_RED);
+			processID = process_manip::GetProcessID(processName);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			system("cls");
+		} while (processID == 0);
+
+		return processID;
+	}
+
+	uintptr_t WaitForModule(DWORD processID, const wchar_t* moduleName)
+	{
+		uintptr_t moduleBaseAddress{ 0 };
+		do
+		{
+			Notice noticeWaitingForModule("Waiting for the module to finish loading", TextColors::GREEN);
+			moduleBaseAddress = process_manip::GetProcessModuleBaseAddress(processID, moduleName);
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			system("cls");
+		} while (moduleBaseAddress == 0);
+
+		return moduleBaseAddress;
+	}
+
+	HANDLE OpenTargetProcess(DWORD processID) {
+		HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, NULL, processID);
+		if (!process) {
+			throw std::runtime_error("Failed to open process. Error code: " + std::to_string(GetLastError()));
+		}
+		return process;
 	}
 }

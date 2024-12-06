@@ -19,4 +19,13 @@ namespace process_manip
 
 	// Adds offsets together for a pointer within targeted process to obtain a static pointer
 	uintptr_t GetStaticPointer(HANDLE process, uintptr_t pointer, std::vector<unsigned int>offsets);
+
+	// Wait for the process and return its ID once it has been opened
+	DWORD WaitForProcess(const wchar_t* processName);
+
+	// Wait for the module to load, and return its start address
+	uintptr_t WaitForModule(DWORD processID, const wchar_t* moduleName);
+
+	// Get a handle to the given process, throws if it fails
+	HANDLE OpenTargetProcess(DWORD processID);
 }
