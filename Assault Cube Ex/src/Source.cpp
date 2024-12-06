@@ -45,12 +45,11 @@ int main()
 			{"Grenades", ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades), game_values::newGrenades, game_values::oldGrenades, false},
 		};
 
-		CheatAssist cheatHelper(process);
-
 
 		// Listen for keystrokes, and then activate and display the cheat that corresponds to the pressed key
 
-		DWORD exitCode = 0;
+		DWORD exitCode = 0; // used for monitoring whether the game is still running or not
+		CheatAssist cheatHelper(process); // helper class
 		while (GetExitCodeProcess(process, &exitCode) && exitCode == STILL_ACTIVE && !GetAsyncKeyState(VK_END)) // Run the loop only while the game is running by checking the exitCode
 		{
 			// Check if the key matches any cheat toggle key, if it does then toggle it
