@@ -18,13 +18,13 @@
     <ClCompile Include="src\Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\stdafx.cpp">
+    <ClCompile Include="pch\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\process_manip.cpp">
+    <ClCompile Include="utils\process_manip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\memory_manip.cpp">
+    <ClCompile Include="utils\memory_manip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils\console.cpp">
@@ -32,16 +32,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\process_manip.h">
+    <ClInclude Include="utils\process_manip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\stdafx.h">
+    <ClInclude Include="pch\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\game_offsets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\memory_manip.h">
+    <ClInclude Include="utils\memory_manip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\game_values.h">
