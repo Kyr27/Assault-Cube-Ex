@@ -37,12 +37,16 @@ int main()
 {
 	std::chrono::time_point<std::chrono::system_clock>start, end;
 
+	// Wait for the process and module
+
 	DWORD processID = WaitForProcess(L"ac_client.exe");
 	uintptr_t moduleBaseAddress = WaitForModule(processID, L"ac_client.exe");
 
-
 	std::cout << "Process ID: " << std::hex << processID << '\n';
 	std::cout << "Module base address: " << moduleBaseAddress << std::dec << '\n';
+
+	// Open handle to the process
+
 
 	uintptr_t localPlayerAddr = moduleBaseAddress + game_offsets::relative;
 
