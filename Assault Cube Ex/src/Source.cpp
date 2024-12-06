@@ -55,11 +55,10 @@ int main()
 
 	// Open handle to the process
 
-	uintptr_t localPlayerAddr = moduleBaseAddress + game_offsets::relative;
-
 	HANDLE process = OpenTargetProcess(processID);
 	if (process != NULL)
 	{
+		uintptr_t localPlayerAddr		= moduleBaseAddress + game_offsets::relative;
 		uintptr_t healthAddr			= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health);
 		uintptr_t armorAddr				= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::armor);
 		uintptr_t primaryMagAddr		= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag);
