@@ -48,118 +48,119 @@ void ToggleCheat(HANDLE process, uintptr_t addr, int& newValue, int& oldValue, b
 		reinterpret_cast<BYTE*>(toggleState ? &newValue : &oldValue), sizeof(int));
 }
 
+template <typename T>
+T ReadValue(HANDLE process, uintptr_t addr) {
+	T value;
+	ReadProcessMemory(process, reinterpret_cast<BYTE*>(addr), &value, sizeof(T), nullptr);
+	return value;
+}
+
+void DisplayValue(const std::string& name, uintptr_t addr, int value, TextColors color) {
+	ValueData notice(name, addr, &value, color);
+}
+
+struct FeatureToggle {
+	std::string name;
+	uintptr_t address;
+	int newValue;
+	int oldValue;
+	bool isEnabled;
+};
+
+class CheatAssist {
+public:
+	CheatAssist(HANDLE proc) : process(proc) {}
+
+	void ToggleFeature(FeatureToggle& feature) {
+		feature.isEnabled = !feature.isEnabled;
+		memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(feature.address),
+			reinterpret_cast<BYTE*>(feature.isEnabled ? &feature.newValue : &feature.oldValue),
+			sizeof(int));
+	}
+
+	int ReadFeatureValue(const FeatureToggle& feature) {
+		return ReadValue<int>(process, feature.address);
+	}
+
+private:
+	HANDLE process;
+};
+
+void HandleInput(HANDLE process, CheatAssist& cheatHelper, std::vector<FeatureToggle>& features) {
+	for (size_t i = 0; i < features.size(); ++i) {
+		if (GetAsyncKeyState(VK_NUMPAD9 - i) & 0x0001) {
+			cheatHelper.ToggleFeature(features[i]);
+		}
+	}
+}
+
 
 int main()
 {
-	// Wait for the process and module
+	try {
+		// Wait for process and module to load
 
-	DWORD processID = WaitForProcess(L"ac_client.exe");
-	uintptr_t moduleBaseAddress = WaitForModule(processID, L"ac_client.exe");
+		DWORD processID = WaitForProcess(L"ac_client.exe");
+		uintptr_t moduleBase = WaitForModule(processID, L"ac_client.exe");
 
-	std::cout << "Process ID: " << std::hex << processID << '\n';
-	std::cout << "Module base address: " << moduleBaseAddress << std::dec << '\n';
+		std::cout << "Process ID: " << std::hex << processID << '\n';
+		std::cout << "Module base address: " << moduleBase << '\n';
 
 
-	// Open handle to the process
+		// Open a handle to the game so we can modify it
 
-	HANDLE process = OpenTargetProcess(processID);
-	if (process != NULL)
-	{
+		HANDLE process = OpenTargetProcess(processID);
+
+
 		// Get the addresses for each cheat
 
-		uintptr_t localPlayerAddr		= moduleBaseAddress + game_offsets::relative;
-		uintptr_t healthAddr			= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health);
-		uintptr_t armorAddr				= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::armor);
-		uintptr_t primaryMagAddr		= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag);
-		uintptr_t primaryAmmoAddr		= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryAmmo);
-		uintptr_t primaryStateAddr		= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryState);
-		uintptr_t grenadesAddr			= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades);
-		uintptr_t recoilNopAddr			= moduleBaseAddress + 0x63786;
+		uintptr_t localPlayerAddr = moduleBase + game_offsets::relative;
+		uintptr_t healthAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health);
+		uintptr_t armorAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::armor);
+		uintptr_t primaryMagAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag);
+		uintptr_t primaryAmmoAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryAmmo);
+		uintptr_t primaryStateAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryState);
+		uintptr_t grenadesAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades);
+		uintptr_t recoilNopAddr = moduleBase + 0x63786;
 
 
-		// Declare and initalize variables for things such as health
+		// Declare and initialize the cheat variables
 
-		int currentHealth{ 0 };
-		int currentArmor{ 0 };
-		int currentPrimaryMag{ 0 };
-		int currentPrimaryAmmo{ 0 };
-		int currentPrimaryState{ 0 };
-		int currentGrenades{ 0 };
+		std::vector<FeatureToggle> cheats = {
+			{"Health", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health), game_values::newHealth, game_values::oldHealth, false},
+			{"Armor", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::armor), game_values::newArmor, game_values::oldArmor, false},
+			{"Primary Mag", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag), game_values::newPrimaryMag, game_values::oldPrimaryMag, false},
+			{"Primary Ammo", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryAmmo), game_values::newPrimaryAmmo, game_values::oldPrimaryAmmo, false},
+			{"Grenades", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades), game_values::newGrenades, game_values::oldGrenades, false},
+		};
+
+		CheatAssist cheatHelper(process);
 
 
-		// Booleans control whether the cheat is toggled or not
+		// Listen for keystrokes, and then activate and display the cheat that corresponds to the pressed key
 
-		bool health = false;
-		bool armor = false;
-		bool primaryMag = false;
-		bool primaryAmmo = false;
-		bool grenades = false;
-		bool recoil = false;
-
-		DWORD exitcode = 0;
-		while (GetExitCodeProcess(process, &exitcode) && exitcode == STILL_ACTIVE && !GetAsyncKeyState(VK_END))
+		DWORD exitCode = 0;
+		while (GetExitCodeProcess(process, &exitCode) && exitCode == STILL_ACTIVE && !GetAsyncKeyState(VK_END)) // Run the loop only while the game is running by checking the exitCode
 		{
-			Notice noticeQuitKey("Game running, press the ", TextColors::BRIGHT_WHITE, "End", TextColors::BRIGHT_RED, " key to exit the console");
-			Notice noticeNumLockKey("Ensure your ", TextColors::BRIGHT_RED, "Num Lock", TextColors::BRIGHT_GREEN, " key is toggled");
-			std::cout << "\n";
-			Notice noticeHealthKey("Use the ", TextColors::GRAY, "Numpad 9", TextColors::BRIGHT_GREEN, " key to set Health");
-			Notice noticeArmorKey("Use the ", TextColors::GRAY, "Numpad 8", TextColors::BRIGHT_GREEN, " key to set Armor");
-			Notice noticePrimaryMagKey("Use the ", TextColors::GRAY, "Numpad 7", TextColors::BRIGHT_GREEN, " key to set Primary magazine");
-			Notice noticePrimaryAmmoKey("Use the ", TextColors::GRAY, "Numpad 6", TextColors::BRIGHT_GREEN, " key to set Primary ammunition");
-			Notice noticeGrenadesKey("Use the ", TextColors::GRAY, "Numpad 5", TextColors::BRIGHT_GREEN, " key to set Grenades");
-			Notice noticeRecoilKey{"Use the ", TextColors::GRAY, "Numpad 4", TextColors::BRIGHT_GREEN, " key to set Recoil" };
-			std::cout << "\n";
+			// Check if the key matches any cheat toggle key, if it does then toggle it
+			HandleInput(process, cheatHelper, cheats);
 
-			if (GetAsyncKeyState(VK_NUMPAD9) & 0x0001) ToggleCheat(process, healthAddr, game_values::newHealth, game_values::oldHealth, health);
-			else if (GetAsyncKeyState(VK_NUMPAD8) & 0x0001) ToggleCheat(process, armorAddr, game_values::newArmor, game_values::oldArmor, armor);
-			else if (GetAsyncKeyState(VK_NUMPAD7) & 0x0001) ToggleCheat(process, primaryMag, game_values::newPrimaryMag, game_values::oldPrimaryMag, primaryMag);
-			else if (GetAsyncKeyState(VK_NUMPAD6) & 0x0001) ToggleCheat(process, primaryAmmoAddr, game_values::newPrimaryAmmo, game_values::oldPrimaryAmmo, primaryAmmo);
-			else if (GetAsyncKeyState(VK_NUMPAD5) & 0x0001) ToggleCheat(process, grenadesAddr, game_values::newGrenades, game_values::oldGrenades, grenades);
-			else if (GetAsyncKeyState(VK_NUMPAD4) & 0x0001)
-			{
-				recoil = !recoil;
-				if (recoil)
-				{
-					memory_manip::NopEx(process, reinterpret_cast<BYTE*>(recoilNopAddr), 10);
-				}
-				else
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(recoilNopAddr), (BYTE*)"\x50\x8d\x4c\x24\x1c\x51\x8b\xce\xff\xd2", 10);
-				}
+			// Display and update the cheat values
+			for (const auto& feature : cheats) {
+				int value = cheatHelper.ReadFeatureValue(feature);
+				DisplayValue(feature.name, feature.address, value, TextColors::BRIGHT_GREEN);
 			}
 
-
-			// Update the variables for health and other
-
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(healthAddr), &currentHealth, sizeof(int), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(armorAddr), &currentArmor, sizeof(int), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryMagAddr), &currentPrimaryMag, sizeof(int), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryAmmoAddr), &currentPrimaryAmmo, sizeof(int), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(primaryStateAddr), &currentPrimaryState, sizeof(int), nullptr);
-			ReadProcessMemory(process, reinterpret_cast<BYTE*>(grenadesAddr), &currentGrenades, sizeof(int), nullptr);
-
-
-			// Update the console with new variable values
-
-			ValueData noticeHealth("Health", healthAddr, &currentHealth, TextColors::BRIGHT_GREEN);
-			ValueData noticeArmor("Armor", armorAddr, &currentArmor, TextColors::GREEN);
-			ValueData noticePrimaryMag("Primary Mag", primaryMagAddr, &currentPrimaryMag, TextColors::BRIGHT_RED);
-			ValueData noticePrimaryAmmo("Primary Ammo", primaryAmmoAddr, &currentPrimaryAmmo, TextColors::BRIGHT_RED);
-			ValueData noticeprimaryStateAddr("Primary State", primaryStateAddr, &currentPrimaryState, TextColors::GRAY);
-			ValueData noticeGrenades("Grenades", grenadesAddr, &currentGrenades, TextColors::BRIGHT_RED);
-
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
-			system("cls");
 		}
+
+		// Close the handle to prevent a memory leak
+		CloseHandle(process);
 	}
-	else
-	{
-		std::cerr << "Error, invalid handle value when attempting to OpenProcess\n";
-		static_cast<void>(std::getchar());
+	catch (const std::exception& e) {
+		std::cerr << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
 
-	CloseHandle(process);
-	std::this_thread::sleep_for(std::chrono::seconds(2));
 	return EXIT_SUCCESS;
 }
