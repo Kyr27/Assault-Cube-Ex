@@ -44,8 +44,6 @@ HANDLE OpenTargetProcess(DWORD processID) {
 
 int main()
 {
-	std::chrono::time_point<std::chrono::system_clock>start, end;
-
 	// Wait for the process and module
 
 	DWORD processID = WaitForProcess(L"ac_client.exe");
@@ -54,8 +52,8 @@ int main()
 	std::cout << "Process ID: " << std::hex << processID << '\n';
 	std::cout << "Module base address: " << moduleBaseAddress << std::dec << '\n';
 
-	// Open handle to the process
 
+	// Open handle to the process
 
 	uintptr_t localPlayerAddr = moduleBaseAddress + game_offsets::relative;
 
@@ -78,7 +76,6 @@ int main()
 		bool recoil = false;
 
 		DWORD exitcode = 0;
-		start = std::chrono::system_clock::now();
 		while (GetExitCodeProcess(process, &exitcode) && exitcode == STILL_ACTIVE && !GetAsyncKeyState(VK_END))
 		{
 			Notice noticeQuitKey("Game running, press the ", TextColors::BRIGHT_WHITE, "End", TextColors::BRIGHT_RED, " key to exit the console");
@@ -200,9 +197,6 @@ int main()
 	}
 
 	CloseHandle(process);
-	end = std::chrono::system_clock::now();
-	std::chrono::duration<double>elapsedMinutes = (end - start)/60;
-	std::cout << "Runtime duration: " << elapsedMinutes.count() << " min" << '\n';
 	std::this_thread::sleep_for(std::chrono::seconds(2));
 	return EXIT_SUCCESS;
 }
