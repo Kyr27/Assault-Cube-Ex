@@ -171,6 +171,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="utils\cheatassist.cpp" />
     <ClCompile Include="utils\memoryassist.cpp" />
     <ClCompile Include="utils\processassist.cpp" />
     <ClCompile Include="src\Source.cpp" />
@@ -184,6 +185,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sdk\game_values.h" />
+    <ClInclude Include="utils\cheatassist.h" />
     <ClInclude Include="utils\processassist.h" />
     <ClInclude Include="pch\stdafx.h" />
     <ClInclude Include="sdk\game_offsets.h" />
