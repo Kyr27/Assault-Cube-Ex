@@ -4,6 +4,7 @@
 #include <iostream>
 #include <thread>
 #include <iomanip>
+#include <string>
 
 // Data Structures
 #include <vector>

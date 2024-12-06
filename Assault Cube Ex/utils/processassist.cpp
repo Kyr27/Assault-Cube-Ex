@@ -1,11 +1,5 @@
-#define WIN32_LEAN_AND_MEAN
 #include "processassist.h"
-#include <iostream>
-#include <Windows.h>
-#include <TlHelp32.h>
-#include <vector>
-#include <console.h>
-#include <string>
+#include "console.h"
 
 namespace ProcessAssist
 {
