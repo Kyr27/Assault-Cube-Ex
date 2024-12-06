@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "memoryassist.h"
 
 namespace MemoryAssist
