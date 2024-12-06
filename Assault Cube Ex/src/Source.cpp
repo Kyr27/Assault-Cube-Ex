@@ -4,6 +4,7 @@
 #include "game_offsets.h"
 #include "game_values.h"
 #include "console.h"
+#include <string>
 
 DWORD WaitForProcess(const wchar_t* processName)
 {
@@ -33,6 +34,14 @@ uintptr_t WaitForModule(DWORD processID, const wchar_t* moduleName)
 	return moduleBaseAddress;
 }
 
+HANDLE OpenTargetProcess(DWORD processID) {
+	HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, NULL, processID);
+	if (!process) {
+		throw std::runtime_error("Failed to open process. Error code: " + std::to_string(GetLastError()));
+	}
+	return process;
+}
+
 int main()
 {
 	std::chrono::time_point<std::chrono::system_clock>start, end;
@@ -50,7 +59,7 @@ int main()
 
 	uintptr_t localPlayerAddr = moduleBaseAddress + game_offsets::relative;
 
-	HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, NULL, processID);
+	HANDLE process = OpenTargetProcess(processID);
 	if (process != NULL)
 	{
 		uintptr_t healthAddr			= process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health);
