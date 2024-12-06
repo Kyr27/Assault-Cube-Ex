@@ -5,27 +5,41 @@
 #include "game_values.h"
 #include "console.h"
 
-
-int main()
+DWORD WaitForProcess(const wchar_t* processName)
 {
-	std::chrono::time_point<std::chrono::system_clock>start, end;
 	DWORD processID{ 0 };
 	do
 	{
-		Notice noticeWaitingForGame("Waiting for ac_client.exe", TextColors::BRIGHT_RED);
-		processID = process_manip::GetProcessID(L"ac_client.exe");
+		Notice noticeWaitingForGame("Waiting for process", TextColors::BRIGHT_RED);
+		processID = process_manip::GetProcessID(processName);
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		system("cls");
 	} while (processID == 0);
 
+	return processID;
+}
+
+uintptr_t WaitForModule(DWORD processID, const wchar_t* moduleName)
+{
 	uintptr_t moduleBaseAddress{ 0 };
 	do
 	{
 		Notice noticeWaitingForModule("Waiting for the module to finish loading", TextColors::GREEN);
-		moduleBaseAddress = process_manip::GetProcessModuleBaseAddress(processID, L"ac_client.exe");
+		moduleBaseAddress = process_manip::GetProcessModuleBaseAddress(processID, moduleName);
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		system("cls");
 	} while (moduleBaseAddress == 0);
+
+	return moduleBaseAddress;
+}
+
+int main()
+{
+	std::chrono::time_point<std::chrono::system_clock>start, end;
+
+	DWORD processID = WaitForProcess(L"ac_client.exe");
+	uintptr_t moduleBaseAddress = WaitForModule(processID, L"ac_client.exe");
+
 
 	std::cout << "Process ID: " << std::hex << processID << '\n';
 	std::cout << "Module base address: " << moduleBaseAddress << std::dec << '\n';
