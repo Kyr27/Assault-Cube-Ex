@@ -42,6 +42,13 @@ HANDLE OpenTargetProcess(DWORD processID) {
 	return process;
 }
 
+void ToggleCheat(HANDLE process, uintptr_t addr, int& newValue, int& oldValue, bool& toggleState) {
+	toggleState = !toggleState;
+	memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(addr),
+		reinterpret_cast<BYTE*>(toggleState ? &newValue : &oldValue), sizeof(int));
+}
+
+
 int main()
 {
 	// Wait for the process and module
@@ -88,68 +95,11 @@ int main()
 			Notice noticeRecoilKey{"Use the ", TextColors::GRAY, "Numpad 4", TextColors::BRIGHT_GREEN, " key to set Recoil" };
 			std::cout << "\n";
 
-			if (GetAsyncKeyState(VK_NUMPAD9) & 0x0001)
-			{
-				health = !health;
-				if (health)
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(healthAddr), reinterpret_cast<BYTE*>(&game_values::newHealth), sizeof(game_values::newHealth));
-				}
-				else
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(healthAddr), reinterpret_cast<BYTE*>(&game_values::oldHealth), sizeof(game_values::oldHealth));
-				}
-			}
-			else if (GetAsyncKeyState(VK_NUMPAD8) & 0x0001)
-			{
-				armor = !armor;
-				if (armor)
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(armorAddr), reinterpret_cast<BYTE*>(&game_values::newArmor), sizeof(game_values::newArmor));
-				}
-				else
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(armorAddr), reinterpret_cast<BYTE*>(&game_values::oldArmor), sizeof(game_values::oldArmor));
-				}
-			}
-			else if (GetAsyncKeyState(VK_NUMPAD7) & 0x0001)
-			{
-				primaryMag = !primaryMag;
-				if (primaryMag)
-				{
-					//memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(primaryMagAddr), reinterpret_cast<BYTE*>(&game_values::newPrimaryMag), sizeof(game_values::newPrimaryMag));
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(moduleBaseAddress + 0x637e9), (BYTE*)"\xFF\x06", 2);
-				}
-				else
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(moduleBaseAddress + 0x637e9), (BYTE*)"\xFF\x0E", 2);
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(primaryMagAddr), reinterpret_cast<BYTE*>(&game_values::oldPrimaryMag), sizeof(game_values::oldPrimaryMag));
-				}
-			}
-			else if (GetAsyncKeyState(VK_NUMPAD6) & 0x0001)
-			{
-				primaryAmmo = !primaryAmmo;
-				if (primaryAmmo)
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(primaryAmmoAddr), reinterpret_cast<BYTE*>(&game_values::newPrimaryAmmo), sizeof(game_values::newPrimaryAmmo));
-				}
-				else
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(primaryAmmoAddr), reinterpret_cast<BYTE*>(&game_values::oldPrimaryAmmo), sizeof(game_values::oldPrimaryAmmo));
-				}
-			}
-			else if (GetAsyncKeyState(VK_NUMPAD5) & 0x0001)
-			{
-				grenades = !grenades;
-				if (grenades)
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(grenadesAddr), reinterpret_cast<BYTE*>(&game_values::newGrenades), sizeof(game_values::newGrenades));
-				}
-				else
-				{
-					memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(grenadesAddr), reinterpret_cast<BYTE*>(&game_values::oldGrenades), sizeof(game_values::oldGrenades));
-				}
-			}
+			if (GetAsyncKeyState(VK_NUMPAD9) & 0x0001) ToggleCheat(process, healthAddr, game_values::newHealth, game_values::oldHealth, health);
+			else if (GetAsyncKeyState(VK_NUMPAD8) & 0x0001) ToggleCheat(process, armorAddr, game_values::newArmor, game_values::oldArmor, armor);
+			else if (GetAsyncKeyState(VK_NUMPAD7) & 0x0001) ToggleCheat(process, primaryMag, game_values::newPrimaryMag, game_values::oldPrimaryMag, primaryMag);
+			else if (GetAsyncKeyState(VK_NUMPAD6) & 0x0001) ToggleCheat(process, primaryAmmoAddr, game_values::newPrimaryAmmo, game_values::oldPrimaryAmmo, primaryAmmo);
+			else if (GetAsyncKeyState(VK_NUMPAD5) & 0x0001) ToggleCheat(process, grenadesAddr, game_values::newGrenades, game_values::oldGrenades, grenades);
 			else if (GetAsyncKeyState(VK_NUMPAD4) & 0x0001)
 			{
 				recoil = !recoil;
