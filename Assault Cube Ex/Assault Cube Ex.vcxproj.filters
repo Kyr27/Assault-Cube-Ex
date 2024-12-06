@@ -38,13 +38,13 @@
     <ClInclude Include="pch\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\game_offsets.h">
+    <ClInclude Include="sdk\game_offsets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils\memory_manip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\game_values.h">
+    <ClInclude Include="sdk\game_values.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils\console.h">
