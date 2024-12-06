@@ -5,7 +5,7 @@
 #include <TlHelp32.h>
 #include <vector>
 
-namespace process_manip
+namespace ProcessAssist
 {
 	// Traverses a list of processes and compares their executable file name against given name(case insensitive)
 	// Returns the process ID of that process if successful

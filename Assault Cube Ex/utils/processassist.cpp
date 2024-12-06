@@ -1,5 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
-#include "process_manip.h"
+#include "processassist.h"
 #include <iostream>
 #include <Windows.h>
 #include <TlHelp32.h>
@@ -7,7 +7,7 @@
 #include <console.h>
 #include <string>
 
-namespace process_manip
+namespace ProcessAssist
 {
 	DWORD GetProcessID(const wchar_t* processName)
 	{
@@ -35,6 +35,7 @@ namespace process_manip
 		CloseHandle(processSnap);
 		return processID;
 	}
+
 	uintptr_t GetProcessModuleBaseAddress(DWORD processID, const wchar_t* moduleName)
 	{
 		uintptr_t moduleBaseAddress{ 0 };
@@ -60,6 +61,7 @@ namespace process_manip
 		CloseHandle(processSnap);
 		return moduleBaseAddress;
 	}
+
 	uintptr_t GetStaticPointer(HANDLE process, uintptr_t pointer, std::vector<unsigned int>offsets)
 	{
 		for (auto offset : offsets)
@@ -70,14 +72,13 @@ namespace process_manip
 		return pointer;
 	}
 
-
 	DWORD WaitForProcess(const wchar_t* processName)
 	{
 		DWORD processID{ 0 };
 		do
 		{
 			Notice noticeWaitingForGame("Waiting for process", TextColors::BRIGHT_RED);
-			processID = process_manip::GetProcessID(processName);
+			processID = ProcessAssist::GetProcessID(processName);
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			system("cls");
 		} while (processID == 0);
@@ -91,7 +92,7 @@ namespace process_manip
 		do
 		{
 			Notice noticeWaitingForModule("Waiting for the module to finish loading", TextColors::GREEN);
-			moduleBaseAddress = process_manip::GetProcessModuleBaseAddress(processID, moduleName);
+			moduleBaseAddress = ProcessAssist::GetProcessModuleBaseAddress(processID, moduleName);
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			system("cls");
 		} while (moduleBaseAddress == 0);

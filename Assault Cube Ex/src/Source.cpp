@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "process_manip.h"
+#include "processassist.h"
 #include "memory_manip.h"
 #include "game_offsets.h"
 #include "game_values.h"
@@ -65,8 +65,8 @@ int main()
 	try {
 		// Wait for process and module to load
 
-		DWORD processID = process_manip::WaitForProcess(L"ac_client.exe");
-		uintptr_t moduleBase = process_manip::WaitForModule(processID, L"ac_client.exe");
+		DWORD processID = ProcessAssist::WaitForProcess(L"ac_client.exe");
+		uintptr_t moduleBase = ProcessAssist::WaitForModule(processID, L"ac_client.exe");
 
 		std::cout << "Process ID: " << std::hex << processID << '\n';
 		std::cout << "Module base address: " << moduleBase << '\n';
@@ -74,29 +74,29 @@ int main()
 
 		// Open a handle to the game so we can modify it
 
-		HANDLE process = process_manip::OpenTargetProcess(processID);
+		HANDLE process = ProcessAssist::OpenTargetProcess(processID);
 
 
 		// Get the addresses for each cheat
 
 		uintptr_t localPlayerAddr = moduleBase + game_offsets::relative;
-		uintptr_t healthAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health);
-		uintptr_t armorAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::armor);
-		uintptr_t primaryMagAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag);
-		uintptr_t primaryAmmoAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryAmmo);
-		uintptr_t primaryStateAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryState);
-		uintptr_t grenadesAddr = process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades);
+		uintptr_t healthAddr = ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::health);
+		uintptr_t armorAddr = ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::armor);
+		uintptr_t primaryMagAddr = ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag);
+		uintptr_t primaryAmmoAddr = ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryAmmo);
+		uintptr_t primaryStateAddr = ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryState);
+		uintptr_t grenadesAddr = ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades);
 		uintptr_t recoilNopAddr = moduleBase + 0x63786;
 
 
 		// Declare and initialize the cheat variables
 
 		std::vector<FeatureToggle> cheats = {
-			{"Health", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::health), game_values::newHealth, game_values::oldHealth, false},
-			{"Armor", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::armor), game_values::newArmor, game_values::oldArmor, false},
-			{"Primary Mag", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag), game_values::newPrimaryMag, game_values::oldPrimaryMag, false},
-			{"Primary Ammo", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryAmmo), game_values::newPrimaryAmmo, game_values::oldPrimaryAmmo, false},
-			{"Grenades", process_manip::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades), game_values::newGrenades, game_values::oldGrenades, false},
+			{"Health", ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::health), game_values::newHealth, game_values::oldHealth, false},
+			{"Armor", ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::armor), game_values::newArmor, game_values::oldArmor, false},
+			{"Primary Mag", ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryMag), game_values::newPrimaryMag, game_values::oldPrimaryMag, false},
+			{"Primary Ammo", ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::primaryAmmo), game_values::newPrimaryAmmo, game_values::oldPrimaryAmmo, false},
+			{"Grenades", ProcessAssist::GetStaticPointer(process, localPlayerAddr, game_offsets::grenades), game_values::newGrenades, game_values::oldGrenades, false},
 		};
 
 		CheatAssist cheatHelper(process);

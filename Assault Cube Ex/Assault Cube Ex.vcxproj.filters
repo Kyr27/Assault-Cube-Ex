@@ -21,7 +21,7 @@
     <ClCompile Include="pch\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils\process_manip.cpp">
+    <ClCompile Include="utils\processassist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils\memory_manip.cpp">
@@ -32,7 +32,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utils\process_manip.h">
+    <ClInclude Include="utils\processassist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch\stdafx.h">
