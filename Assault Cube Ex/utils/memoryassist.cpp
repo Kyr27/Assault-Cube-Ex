@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "memory_manip.h"
+#include "memoryassist.h"
 
-namespace memory_manip
+namespace MemoryAssist
 {
 	void PatchEx(HANDLE process, BYTE* destination, BYTE* source, size_t size)
 	{

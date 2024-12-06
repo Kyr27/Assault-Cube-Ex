@@ -171,7 +171,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="utils\memory_manip.cpp" />
+    <ClCompile Include="utils\memoryassist.cpp" />
     <ClCompile Include="utils\processassist.cpp" />
     <ClCompile Include="src\Source.cpp" />
     <ClCompile Include="pch\stdafx.cpp">
@@ -187,7 +187,7 @@
     <ClInclude Include="utils\processassist.h" />
     <ClInclude Include="pch\stdafx.h" />
     <ClInclude Include="sdk\game_offsets.h" />
-    <ClInclude Include="utils\memory_manip.h" />
+    <ClInclude Include="utils\memoryassist.h" />
     <ClInclude Include="utils\console.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "processassist.h"
-#include "memory_manip.h"
+#include "memoryassist.h"
 #include "game_offsets.h"
 #include "game_values.h"
 #include "console.h"
@@ -9,7 +9,7 @@
 
 void ToggleCheat(HANDLE process, uintptr_t addr, int& newValue, int& oldValue, bool& toggleState) {
 	toggleState = !toggleState;
-	memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(addr),
+	MemoryAssist::PatchEx(process, reinterpret_cast<BYTE*>(addr),
 		reinterpret_cast<BYTE*>(toggleState ? &newValue : &oldValue), sizeof(int));
 }
 
@@ -38,7 +38,7 @@ public:
 
 	void ToggleFeature(FeatureToggle& feature) {
 		feature.isEnabled = !feature.isEnabled;
-		memory_manip::PatchEx(process, reinterpret_cast<BYTE*>(feature.address),
+		MemoryAssist::PatchEx(process, reinterpret_cast<BYTE*>(feature.address),
 			reinterpret_cast<BYTE*>(feature.isEnabled ? &feature.newValue : &feature.oldValue),
 			sizeof(int));
 	}
